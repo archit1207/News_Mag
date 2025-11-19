@@ -1,25 +1,44 @@
 import NewsItem from "./NewsItem";
-import { useEffect} from "react";
-import { useState} from "react";
+import { useEffect, useState } from "react";
 
-const NewsBoard = ({category}) => {
+const NewsBoard = ({ category }) => {
+  const [articles, setArticles] = useState([]);
 
-    const [articles,setArticles] = useState([]);
+  useEffect(() => {
+    const apiKey = "ec699cb6042e43e0b6d30ad9bc9c5e33";
 
-    useEffect(()=>{
-        let url = `https://newsapi.org/v2/top-headlines?country=us&category=${category}&apiKey=${import.meta.env.VITE_API_KEY}`;
-        fetch(url).then(response=> response.json()).then(data=> setArticles(data.articles));
+    // GNews categories supported:
+    //   general | world | nation | business | technology | entertainment | sports | science | health
+    // Your navbar categories match these correctly.
 
-    },[category]) 
+    const url = `https://gnews.io/api/v4/top-headlines?category=${category}&lang=en&country=us&apikey=${apiKey}`;
 
-    return (
-        <div>
-            <h2 className="text-center no-select">Latest <span className="badge bg-danger">News</span></h2>
-            {articles.map((news,index)=>{ 
-                return <NewsItem key={index} title={news.title} description={news.description} src={news.urlToImage} url={news.url} />
-            })}
-        </div>
-    )
-}
+    fetch(url)
+      .then((response) => response.json())
+      .then((data) => setArticles(data.articles || []))
+      .catch((err) => {
+        console.error("Error fetching articles", err);
+        setArticles([]);
+      });
+  }, [category]);
 
-export default NewsBoard
+  return (
+    <div>
+      <h2 className="text-center no-select">
+        Latest <span className="badge bg-danger">News</span>
+      </h2>
+
+      {articles.map((news, index) => (
+        <NewsItem
+          key={index}
+          title={news.title}
+          description={news.description}
+          src={news.image}
+          url={news.url}
+        />
+      ))}
+    </div>
+  );
+};
+
+export default NewsBoard;
